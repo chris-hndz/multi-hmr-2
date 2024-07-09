@@ -1,4 +1,5 @@
 using UnityEngine;
+using Newtonsoft.Json;
 
 public class SMPLXAligner : MonoBehaviour
 {
@@ -17,16 +18,125 @@ public class SMPLXAligner : MonoBehaviour
         {
             SetupCamera();
             AlignSMPLX();
-
-            // Set up background image
             SetupBackgroundImage();
         }
+    }
+
+    void SetupCamera()
+    {
+        Debug.Log("parameters.camera_intrinsics.Length = " + parameters.camera_intrinsics.Length);
+        
+        float fx = parameters.camera_intrinsics[0][0];
+        float fy = parameters.camera_intrinsics[1][1];
+        float cx = parameters.camera_intrinsics[0][2];
+        float cy = parameters.camera_intrinsics[1][2];
+
+        float fovY = 2 * Mathf.Atan(parameters.image_height / (2 * fy)) * Mathf.Rad2Deg;
+        alignmentCamera.fieldOfView = fovY;
+
+        float aspect = (float)parameters.image_width / parameters.image_height;
+        alignmentCamera.aspect = aspect;
+    }
+
+    void AlignSMPLX()
+    {
+        foreach (HumanParams human in parameters.humans)
+        {
+            GameObject smplxInstance = Instantiate(smplxPrefab);
+            SMPLX smplxComponent = smplxInstance.GetComponent<SMPLX>();
+            
+            Vector3 position = new Vector3(human.translation[0], human.translation[1], human.translation[2]);
+            smplxInstance.transform.position = position;
+
+            Vector3 rotationVector = new Vector3(human.rotation_vector[0][0], human.rotation_vector[0][1], human.rotation_vector[0][2]);
+            smplxInstance.transform.rotation = Quaternion.Euler(rotationVector * Mathf.Rad2Deg)* Quaternion.Euler(0, 180, 0);
+
+            if (human.rotation_vector != null) ApplyPose(smplxComponent, human.rotation_vector);
+            if (human.shape != null) ApplyShape(smplxComponent, human.shape);
+            if (human.expression != null) ApplyExpression(smplxComponent, human.expression);
+            //if (human.translation_pelvis != null) AdjustPelvisPosition(smplxInstance, human.translation_pelvis[0]);
+
+            // Uncomment and adjust if needed
+            if (human.joints_2d != null) AlignWithJoint2D(smplxInstance, human.joints_2d, parameters.image_width, parameters.image_height, human.translation[2]);
+        }
+    }
+
+    private void ApplyPose(SMPLX smplxMannequin, float[][] newPose) 
+    {
+        if (newPose.Length != _smplxJointNames.Length)
+        {
+            Debug.LogError($"Incorrect number of pose values: {newPose.Length}, expected: {_smplxJointNames.Length}");
+            return;
+        }
+
+        for (int i = 0; i < newPose.Length; i++)
+        {
+            string jointName = _smplxJointNames[i];
+            float rodX = newPose[i][0];
+            float rodY = newPose[i][1];
+            float rodZ = newPose[i][2];
+
+            Quaternion rotation = SMPLX.QuatFromRodrigues(rodX, rodY, rodZ);
+            smplxMannequin.SetLocalJointRotation(jointName, rotation);
+        }
+
+        smplxMannequin.EnablePoseCorrectives(true);
+        Debug.Log("Pose applied successfully.");
+    }
+
+    void ApplyShape(SMPLX smplxMannequin, float[] newBetas)
+    {
+        if (newBetas.Length != SMPLX.NUM_BETAS)
+        {
+            Debug.LogError($"Incorrect number of betas: {newBetas.Length}, expected: {SMPLX.NUM_BETAS}");
+            return;
+        }
+        
+        for (int i = 0; i < SMPLX.NUM_BETAS; i++)
+        {
+            smplxMannequin.betas[i] = newBetas[i];
+        }
+        smplxMannequin.SetBetaShapes();
+        Debug.Log("Shape parameters applied successfully.");
+    }
+
+    void ApplyExpression(SMPLX smplxMannequin, float[] newExpression) 
+    {
+        if (newExpression.Length != SMPLX.NUM_EXPRESSIONS)
+        {
+            Debug.LogError($"Incorrect number of expressions: {newExpression.Length}, expected: {SMPLX.NUM_EXPRESSIONS}");
+            return;
+        }
+        
+        for (int i = 0; i < SMPLX.NUM_EXPRESSIONS; i++)
+        {
+            smplxMannequin.expressions[i] = newExpression[i];
+        }
+        smplxMannequin.SetExpressions();
+        Debug.Log("Expression parameters applied successfully.");
+    }
+
+    void AdjustPelvisPosition(GameObject smplxInstance, float[] pelvisTranslation)
+    {
+        Vector3 pelvisOffset = new Vector3(pelvisTranslation[0], pelvisTranslation[1], pelvisTranslation[2]);
+        smplxInstance.transform.position += pelvisOffset;
+    }
+
+    void AlignWithJoint2D(GameObject smplxInstance, float[][] joints_2d, float image_width, float image_height, float translationZ)
+    {
+        Vector2 pelvis2D = new Vector2(joints_2d[0][0], joints_2d[0][1]);
+        Vector2 pelvisViewport = new Vector2(pelvis2D.x / image_width, 1 - (pelvis2D.y / image_height));
+        Ray ray = alignmentCamera.ViewportPointToRay(new Vector3(pelvisViewport.x, pelvisViewport.y, 0));
+        float pelvisDistance = translationZ;
+        Vector3 pelvis3DWorld = ray.GetPoint(pelvisDistance);
+        Vector3 offset = pelvis3DWorld - smplxInstance.transform.position;
+        smplxInstance.transform.position += offset;
     }
 
     void SetupBackgroundImage()
     {
         GameObject quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
-        quad.transform.position = new Vector3(0, 0, 10); // Ajusta esto según sea necesario
+        quad.transform.position = new Vector3(0, 0, 10);
         
         float aspectRatio = (float)backgroundImage.width / backgroundImage.height;
         float quadHeight = 2f * Mathf.Tan(alignmentCamera.fieldOfView * 0.5f * Mathf.Deg2Rad) * quad.transform.position.z;
@@ -37,159 +147,5 @@ public class SMPLXAligner : MonoBehaviour
         Material mat = new Material(Shader.Find("Unlit/Texture"));
         mat.mainTexture = backgroundImage;
         quad.GetComponent<Renderer>().material = mat;
-    }
-
-    void SetupCamera()
-    {
-        float fx = parameters.camera_intrinsics[0];
-        float fy = parameters.camera_intrinsics[4];
-        float cx = parameters.camera_intrinsics[2];
-        float cy = parameters.camera_intrinsics[5];
-
-        float fovY = 2 * Mathf.Atan(parameters.image_height / (2 * fy)) * Mathf.Rad2Deg;
-        alignmentCamera.fieldOfView = fovY;
-
-        float aspect = (float)parameters.image_width / parameters.image_height;
-        alignmentCamera.aspect = aspect;
-
-        // Adjust camera position if needed
-        // alignmentCamera.transform.position = ...
-    }
-
-    void AlignSMPLX()
-    {
-        foreach (HumanParams human in parameters.humans)
-        {
-            GameObject smplxInstance = Instantiate(smplxPrefab);
-            SMPLX smplxComponent = smplxInstance.GetComponent<SMPLX>();
-            
-            // Set position
-            Vector3 position = new Vector3(
-                human.translation[0],
-                human.translation[1],
-                human.translation[2]
-            );
-            smplxInstance.transform.position = position;
-
-            // Set rotation
-            Vector3 rotationVector = new Vector3(
-                human.rotation_vector[0],
-                human.rotation_vector[1],
-                human.rotation_vector[2]
-            );
-            smplxInstance.transform.rotation = Quaternion.Euler(rotationVector * Mathf.Rad2Deg);
-
-            // Apply pose parameters
-            if (human.rotation_vector != null) ApplyPose(smplxComponent, human.rotation_vector);
-
-            // Apply shape parameters
-            if (human.shape != null) ApplyShape(smplxComponent, human.shape);
-
-            // Apply expression parameters
-            if (human.expression != null) ApplyExpression(smplxComponent, human.expression);
-
-            // Apply shape parameters
-            if (human.shape != null) ApplyShape(smplxComponent, human.shape);
-
-            // Adjust pelvis position if needed
-            if (human.translation_pelvis != null) AdjustPelvisPosition(smplxInstance, human.translation_pelvis);
-
-            // Align with joints2D
-            //if (human.joints_2d != null) AlignWithJoint2D(smplxInstance, human.joints_2d, parameters.image_width, parameters.image_height, human.translation[2]);
-        }
-    }
-
-    private void ApplyPose(SMPLX smplxMannequin, float[] newPose) 
-    {
-        //Debug.Log("El largo de las poses es de: " + newPose.Length);
-
-        if (newPose.Length != (_smplxJointNames.Length+1)*3)
-        {
-            Debug.LogError("No tiene el número correcto de valores: " + newPose.Length + " porque deberían ser: " + _smplxJointNames.Length);
-            return;
-        }
-
-        for (int i = 1; i < (_smplxJointNames.Length+1); i++)
-        {
-            string jointName = _smplxJointNames[i-1];
-            float rodX = newPose[i*3];
-            float rodY = newPose[i*3+1];
-            float rodZ = newPose[i*3+2];
-
-            // Convertir de notación de Rodrigues a cuaternión
-            Quaternion rotation = SMPLX.QuatFromRodrigues(rodX, rodY, rodZ);
-
-            // Aplicar la rotación al joint
-            smplxMannequin.SetLocalJointRotation(jointName, rotation);
-        }
-
-        // Actualizar las posiciones de los joints y los correctivos de pose
-        //smplxMannequin.UpdateJointPositions();
-        //smplxMannequin.UpdatePoseCorrectives();
-        smplxMannequin.EnablePoseCorrectives(true);
-
-        Debug.Log("Se ha aplicado correctamente la pose.");
-    }
-
-    void ApplyShape(SMPLX smplxMannequin, float[] newBetas)
-    {
-        if (newBetas.Length != SMPLX.NUM_BETAS)
-        {
-            Debug.LogError("No tiene el número correcto de betas: " + newBetas.Length + " porque deberían ser: " + SMPLX.NUM_BETAS);
-            return;
-        }
-        
-        for (int i = 0; i < SMPLX.NUM_BETAS; i++)
-        {
-            smplxMannequin.betas[i] = newBetas[i];
-            //Debug.Log("newBetas[" + i + "]: " + newBetas[i]);
-        }
-        smplxMannequin.SetBetaShapes();
-
-        Debug.Log("Se han aplicado correctamente los blendshapes.");
-    }
-
-    void ApplyExpression(SMPLX smplxMannequin, float[] newExpression) 
-    {
-        if (newExpression.Length != SMPLX.NUM_EXPRESSIONS)
-        {
-            Debug.LogError("No tiene el número correcto de expresiones: " + newExpression.Length + " porque deberían ser: " + SMPLX.NUM_EXPRESSIONS);
-            return;
-        }
-        
-        for (int i = 0; i < SMPLX.NUM_EXPRESSIONS; i++)
-        {
-            smplxMannequin.expressions[i] = newExpression[i];
-            //Debug.Log("newExpression[" + i + "]: " + newExpression[i]);
-        }
-        smplxMannequin.SetExpressions();
-
-        Debug.Log("Se han aplicado correctamente las expresiones.");
-    }
-
-    void AdjustPelvisPosition(GameObject smplxInstance, float[] pelvisTranslation)
-    {
-        Vector3 pelvisOffset = new Vector3(
-            pelvisTranslation[0],
-            pelvisTranslation[1],
-            pelvisTranslation[2]
-        );
-        
-        // Adjust the position of the pelvis or the entire model if needed
-        // This depends on how your SMPLX model is structured in Unity
-        smplxInstance.transform.position += pelvisOffset;
-    }
-
-    void AlignWithJoint2D(GameObject smplxInstance, float[] joints_2d, float image_width, float image_height, float translationZ)
-    {
-        // Align using pelvis 2D joint
-        Vector2 pelvis2D = new Vector2(joints_2d[0], joints_2d[1]);
-        Vector2 pelvisViewport = new Vector2(pelvis2D.x / image_width, 
-                                             1 - (pelvis2D.y / image_height));
-        Ray ray = alignmentCamera.ViewportPointToRay(new Vector3(pelvisViewport.x, pelvisViewport.y, 0));
-        float pelvisDistance = translationZ;
-        Vector3 pelvis3DWorld = ray.GetPoint(pelvisDistance);
-        Vector3 offset = pelvis3DWorld - smplxInstance.transform.position;
-        smplxInstance.transform.position += offset;
     }
 }

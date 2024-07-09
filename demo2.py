@@ -83,14 +83,19 @@ def load_model(model_name, device=torch.device('cuda')):
     print("Loading model")
     ckpt = torch.load(ckpt_path, map_location=device)
 
-    # Get arguments saved in the checkpoint to rebuild the model
-    kwargs = {}
-    for k,v in vars(ckpt['args']).items():
-            kwargs[k] = v
+    print("Checkpoint keys:", ckpt.keys())
+    for key in ckpt.keys():
+        if isinstance(ckpt[key], dict):
+            print(f"Contents of {key}:", ckpt[key].keys())
+
+    # Build the model with default arguments
+    kwargs = {
+        'type': 'smplx',  # Asume un valor predeterminado, ajusta según sea necesario
+        'img_size': 672,  # Asume el tamaño de imagen del modelo 'multiHMR_672_S'
+        # Añade aquí otros argumentos predeterminados necesarios para construir el modelo
+    }
 
     # Build the model.
-    kwargs['type'] = ckpt['args'].train_return_type
-    kwargs['img_size'] = ckpt['args'].img_size[0]
     model = Model(**kwargs).to(device)
 
     # Load weights into model.
