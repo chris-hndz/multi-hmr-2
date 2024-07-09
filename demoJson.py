@@ -231,6 +231,7 @@ if __name__ == "__main__":
 
                 for human in humans:
                     human_params = {
+                        "location": tensor_to_list(human['loc']),
                         "translation": tensor_to_list(human['transl']),
                         "translation_pelvis": tensor_to_list(human['transl_pelvis']),
                         "rotation_vector": tensor_to_list(human['rotvec']),
