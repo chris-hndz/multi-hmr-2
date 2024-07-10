@@ -7,6 +7,9 @@ public class SMPLXAligner : MonoBehaviour
     public GameObject smplxPrefab;
     public Camera alignmentCamera;
     public Texture2D backgroundImage;
+    public float jointSize = 5f; // Tamaño de los círculos en píxeles
+    private Vector2[] jointsScreenPositions; // Array para almacenar las posiciones de los joints en la pantalla
+
 
     private SMPLXParams parameters;
     private string[] _smplxJointNames = new string[] { "pelvis", "left_hip", "right_hip", "spine1", "left_knee", "right_knee", "spine2", "left_ankle", "right_ankle", "spine3", "left_foot", "right_foot", "neck", "left_collar", "right_collar", "head", "left_shoulder", "right_shoulder", "left_elbow", "right_elbow", "left_wrist", "right_wrist", "left_index1", "left_index2", "left_index3", "left_middle1", "left_middle2", "left_middle3", "left_pinky1", "left_pinky2", "left_pinky3", "left_ring1", "left_ring2", "left_ring3", "left_thumb1", "left_thumb2", "left_thumb3", "right_index1", "right_index2", "right_index3", "right_middle1", "right_middle2", "right_middle3", "right_pinky1", "right_pinky2", "right_pinky3", "right_ring1", "right_ring2", "right_ring3", "right_thumb1", "right_thumb2", "right_thumb3", "jaw"};
@@ -24,8 +27,6 @@ public class SMPLXAligner : MonoBehaviour
 
     void SetupCamera()
     {
-        Debug.Log("parameters.camera_intrinsics.Length = " + parameters.camera_intrinsics.Length);
-        
         float fx = parameters.camera_intrinsics[0][0];
         float fy = parameters.camera_intrinsics[1][1];
         float cx = parameters.camera_intrinsics[0][2];
@@ -36,6 +37,7 @@ public class SMPLXAligner : MonoBehaviour
 
         float aspect = (float)parameters.image_width / parameters.image_height;
         alignmentCamera.aspect = aspect;
+
     }
 
     void AlignSMPLX()
@@ -57,7 +59,10 @@ public class SMPLXAligner : MonoBehaviour
             //if (human.translation_pelvis != null) AdjustPelvisPosition(smplxInstance, human.translation_pelvis[0]);
 
             // Uncomment and adjust if needed
-            if (human.joints_2d != null) AlignWithJoint2D(smplxInstance, human.joints_2d, parameters.image_width, parameters.image_height, human.translation[2]);
+            if (human.joints_2d != null) {
+                CalculateJointsScreenPositions(human.joints_2d);
+                AlignWithJoint2D(smplxInstance, human.joints_2d, parameters.image_width, parameters.image_height, human.translation[2]);
+            }
         }
     }
 
@@ -147,5 +152,51 @@ public class SMPLXAligner : MonoBehaviour
         Material mat = new Material(Shader.Find("Unlit/Texture"));
         mat.mainTexture = backgroundImage;
         quad.GetComponent<Renderer>().material = mat;
+    }
+
+    void CalculateJointsScreenPositions(float[][] joints_2d)
+    {
+        jointsScreenPositions = new Vector2[joints_2d.Length];
+
+        // Calcular el factor de escala
+        float scaleX = (float)Screen.width / parameters.image_width;
+        float scaleY = (float)Screen.height / parameters.image_height;
+
+        for (int i = 0; i < joints_2d.Length; i++)
+        {
+            float x = (joints_2d[i][0] - (896-parameters.image_width)/2)* scaleX;
+            float y = (parameters.image_height - joints_2d[i][1])* scaleY;
+
+            jointsScreenPositions[i] = new Vector2(x, y);
+
+            if (i == 0) Debug.Log($"Pelvis jointsScreenPositions[{i}]: {jointsScreenPositions[i]}");
+        }
+    }
+
+    void OnGUI()
+    {
+        if (jointsScreenPositions == null) return;
+
+        // Crear un estilo para los círculos
+        GUIStyle circleStyle = new GUIStyle();
+        Texture2D texture = new Texture2D(1, 1);
+        texture.SetPixel(0, 0, Color.green);
+        texture.Apply();
+        circleStyle.normal.background = texture;
+
+        // Dibujar cada joint como un círculo rojo
+        for (int i = 0; i < jointsScreenPositions.Length; i++)
+        {
+            Vector2 pos = jointsScreenPositions[i];
+            
+            // Invertir la coordenada Y para la GUI de Unity
+            pos.y = Screen.height - pos.y;
+            
+            Rect rect = new Rect(pos.x - jointSize / 2, pos.y - jointSize / 2, jointSize, jointSize);
+            GUI.Box(rect, GUIContent.none, circleStyle);
+            
+            // Opcionalmente, puedes dibujar el índice del joint para depuración
+            // GUI.Label(new Rect(pos.x, pos.y, 20, 20), i.ToString());
+        }
     }
 }
