@@ -237,7 +237,8 @@ if __name__ == "__main__":
                         "rotation_vector": tensor_to_list(human['rotvec']),
                         "expression": tensor_to_list(human['expression']),
                         "shape": tensor_to_list(human['shape']),
-                        "joints_2d": tensor_to_list(human['j2d'])
+                        "joints_2d": tensor_to_list(human['j2d']),
+                        "joints_3d": tensor_to_list(human['j3d'])
                     }
                     params_dict["humans"].append(human_params)
 

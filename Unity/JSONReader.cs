@@ -12,6 +12,7 @@ public class HumanParams
     public float[] expression;
     public float[] shape;
     public float[][] joints_2d;
+    public float[][] joints_3d;
 }
 
 [System.Serializable]
