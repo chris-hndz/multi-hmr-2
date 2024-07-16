@@ -245,8 +245,11 @@ public class SMPLXAligner : MonoBehaviour
         quad.transform.position = new Vector3(0, 0, 10);
         
         float aspectRatio = (float)backgroundImage.width / backgroundImage.height;
+        //float aspectRatio = 9f/16f;
         float quadHeight = 2f * Mathf.Tan(alignmentCamera.fieldOfView * 0.5f * Mathf.Deg2Rad) * quad.transform.position.z;
         float quadWidth = quadHeight * aspectRatio;
+
+        //Debug.Log($"backgroundImage.width: {backgroundImage.width}, backgroundImage.height: {backgroundImage.height}, aspectRatio: {aspectRatio}");
         
         quad.transform.localScale = new Vector3(quadWidth, quadHeight, 1);
         
