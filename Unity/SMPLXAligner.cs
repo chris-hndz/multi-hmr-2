@@ -6,9 +6,9 @@ public class SMPLXAligner : MonoBehaviour
 {
     // Propiedades públicas
     public string jsonFilePath;
+    public Texture2D backgroundImage;
     public GameObject smplxPrefab;
     public Camera alignmentCamera;
-    public Texture2D backgroundImage;
     public bool showJoints2D = true;
     public float joint2DSize = 5f; // Tamaño de los círculos en píxeles
     public Color joint2DColor = Color.green;
