@@ -1,7 +1,3 @@
-# Multi-HMR
-# Copyright (c) 2024-present NAVER Corp.
-# CC BY-NC-SA 4.0 license
-
 import os 
 #os.environ["PYOPENGL_PLATFORM"] = "egl"
 os.environ['EGL_DEVICE_ID'] = '0'
@@ -46,7 +42,7 @@ def open_image(img_path, img_size, device=torch.device('cuda')):
     # Normalize and go to torch.
     resize_img = normalize_rgb(resize_img)
     x = torch.from_numpy(resize_img).unsqueeze(0).to(device)
-    return x, img_pil_bis
+    return x, img_pil_bis, img_pil.size  # Return the resized image dimensions
 
 def get_camera_parameters(img_size, fov=60, p_x=None, p_y=None, device=torch.device('cuda')):
     """ Given image size, fov and principal point coordinates, return K the camera parameter matrix"""
@@ -206,8 +202,12 @@ if __name__ == "__main__":
 
             # Get input in the right format for the model
             img_size = model.img_size
-            x, img_pil_nopad = open_image(os.path.join(args.img_folder, img_path), img_size)
-
+            x, img_pil_nopad, resized_dims = open_image(os.path.join(args.img_folder, img_path), img_size)
+            
+            # Save resized image
+            resized_img_path = os.path.join(args.out_folder, f"{Path(img_path).stem}_{model_name}_resized.png")
+            img_pil_nopad.save(resized_img_path)
+            
             # Get camera parameters
             p_x, p_y = None, None
             K = get_camera_parameters(model.img_size, fov=args.fov, p_x=p_x, p_y=p_y)
@@ -225,6 +225,9 @@ if __name__ == "__main__":
                 params_dict = {
                     "image_width": img_pil_nopad.size[0],
                     "image_height": img_pil_nopad.size[1],
+                    "resized_width": resized_dims[0],
+                    "resized_height": resized_dims[1],
+                    "checkpoint_resolution": model.img_size,
                     "camera_intrinsics": tensor_to_list(K[0]),
                     "humans": []
                 }
