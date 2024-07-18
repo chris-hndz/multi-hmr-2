@@ -101,14 +101,15 @@ public class SMPLXAligner : MonoBehaviour
 
             // Rotar en 180° para que quede bien alineado
             smplxInstance.transform.rotation *= Quaternion.Euler(0, 0, 180);
-
+            
             // Posicionar smpl segun el primary keypoint (head)
             if ((human.location != null) && (human.translation != null) && (human.translation_pelvis != null) && (parameters.resized_width != 0) && (parameters.resized_height != 0) && (parameters.checkpoint_resolution != 0)) 
             {
+                AdjustScale(smplxInstance, human.translation, human.translation_pelvis);
                 AlignWithHead3D(smplxInstance, human.translation, parameters.resized_width, parameters.resized_height, parameters.checkpoint_resolution);
-                AdjustScaleAndRotation(smplxInstance, human.translation, human.translation_pelvis);
+                AdjustRotation(smplxInstance, human.translation, human.translation_pelvis);
             }
-
+            
             // Dibujar los Joints2D
             if ((human.joints_2d != null)&&(human.translation_pelvis != null) && (parameters.resized_width != 0) && (parameters.resized_height != 0) && (parameters.checkpoint_resolution != 0)) {
                 CalculateJoints2DScreenPositions(human.joints_2d, parameters.resized_width, parameters.resized_height, parameters.checkpoint_resolution);
@@ -178,22 +179,8 @@ public class SMPLXAligner : MonoBehaviour
         smplxMannequin.SetExpressions();
         Debug.Log("Expression parameters applied successfully.");
     }
-    
-    private void AlignWithHead3D(GameObject smplxInstance, float[] joint3DHead, int image_width, int image_height, int model_img_size)
-    {
-        Transform headTransform = smplxInstance.GetComponent<SMPLX>().JointTransforms[SMPLX_JOINT_NAMES[15]];
-        Vector3 relativePositionHead = smplxInstance.transform.position - headTransform.position;
-        
-        Vector3 head3DWorld = new Vector3(joint3DHead[0], -joint3DHead[1], joint3DHead[2]);
 
-        // Ajustar la posición del modelo SMPLX
-        Vector3 offset = head3DWorld - smplxInstance.transform.position;
-        smplxInstance.transform.position += offset + relativePositionHead;
-
-        //Debug.Log($"offset: {offset}, relativePositionHead: {relativePositionHead}, smplxInstance.transform.position: {smplxInstance.transform.position + offset + relativePositionHead}, 3D World: {head3DWorld}, headTransform.position: {headTransform.position}");
-    }
-
-    private void AdjustScaleAndRotation(GameObject smplxGO, float[] joint3DHead, float[][] joint3DPelvis)
+    private void AdjustScale(GameObject smplxGO, float[] joint3DHead, float[][] joint3DPelvis)
     {
         Vector3 pelvis3D = new Vector3(joint3DPelvis[0][0], -joint3DPelvis[0][1], joint3DPelvis[0][2]);
         Vector3 head3D = new Vector3(joint3DHead[0], -joint3DHead[1], joint3DHead[2]);
@@ -207,7 +194,30 @@ public class SMPLXAligner : MonoBehaviour
 
         // Aplicar escala al SMPL-X
         smplxGO.transform.localScale *= scaleFactor;
+    }
 
+    private void AlignWithHead3D(GameObject smplxInstance, float[] joint3DHead, int image_width, int image_height, int model_img_size)
+    {
+        Transform headTransform = smplxInstance.GetComponent<SMPLX>().JointTransforms[SMPLX_JOINT_NAMES[15]];
+        Vector3 relativePositionHead = smplxInstance.transform.position - headTransform.position;
+        
+        Vector3 head3DWorld = new Vector3(joint3DHead[0], -joint3DHead[1], joint3DHead[2]);
+
+        // Ajustar la posición del modelo SMPLX
+        Vector3 offset = head3DWorld - smplxInstance.transform.position;
+        smplxInstance.transform.position += offset + relativePositionHead;
+
+        Debug.Log($"offset: {offset}, relativePositionHead: {relativePositionHead}, smplxInstance.transform.position: {smplxInstance.transform.position + offset + relativePositionHead}, 3D World: {head3DWorld}, headTransform.position: {headTransform.position}");
+    }
+
+    private void AdjustRotation(GameObject smplxGO, float[] joint3DHead, float[][] joint3DPelvis)
+    {
+        Vector3 smplxHead = smplxGO.GetComponent<SMPLX>().JointTransforms[SMPLX_JOINT_NAMES[15]].position;
+        Vector3 smplxPelvis = smplxGO.GetComponent<SMPLX>().JointTransforms[SMPLX_JOINT_NAMES[0]].position;
+
+        Vector3 pelvis3D = new Vector3(joint3DPelvis[0][0], -joint3DPelvis[0][1], joint3DPelvis[0][2]);
+        Vector3 head3D = new Vector3(joint3DHead[0], -joint3DHead[1], joint3DHead[2]);
+        
         // Dejar la cabeza como el pivote para rotar el SMPL-X
         GameObject smplxPivotGO = new GameObject();
         Transform smplxPivot = smplxPivotGO.transform;
@@ -219,11 +229,11 @@ public class SMPLXAligner : MonoBehaviour
         Vector3 targetPelvisDirection = (pelvis3D - head3D).normalized;
 
         Quaternion additionalRotation = Quaternion.FromToRotation(currentPelvisDirection, targetPelvisDirection);
-        //Debug.Log($"currentPelvisDirection: {currentPelvisDirection}, targetPelvisDirection: {targetPelvisDirection}, additionalRotation: {additionalRotation}");
+        Debug.Log($"currentPelvisDirection: {currentPelvisDirection}, targetPelvisDirection: {targetPelvisDirection}, additionalRotation: {additionalRotation}");
 
         // Aplicar rotación
         smplxPivot.rotation *= additionalRotation;
-        //Debug.Log($"smplxPivot.rotation después: {smplxPivot.eulerAngles}");
+        Debug.Log($"smplxPivot.rotation después: {smplxPivot.eulerAngles}");
 
         // Borrar el pivote
         smplxGO.transform.parent = null;
@@ -237,7 +247,7 @@ public class SMPLXAligner : MonoBehaviour
         // Destruir los GameObjects creados
         Destroy(smplxPivotGO);
     }
-    
+
     private void SetupBackgroundImage()
     {
         GameObject quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
