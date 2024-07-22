@@ -18,8 +18,6 @@ public class HumanParams
 [System.Serializable]
 public class SMPLXParams
 {
-    //public int image_width;
-    //public int image_height;
     public int resized_width;
     public int resized_height;
     public int checkpoint_resolution;

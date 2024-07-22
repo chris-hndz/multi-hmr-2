@@ -18,8 +18,8 @@ public class SMPLXAligner : MonoBehaviour
     
 
     // Propiedades privadas
-    private string[] SMPLX_JOINT_NAMES = new string[] { "pelvis", "left_hip", "right_hip", "spine1", "left_knee", "right_knee", "spine2", "left_ankle", "right_ankle", "spine3", "left_foot", "right_foot", "neck", "left_collar", "right_collar", "head", "left_shoulder", "right_shoulder", "left_elbow", "right_elbow", "left_wrist", "right_wrist", "left_index1", "left_index2", "left_index3", "left_middle1", "left_middle2", "left_middle3", "left_pinky1", "left_pinky2", "left_pinky3", "left_ring1", "left_ring2", "left_ring3", "left_thumb1", "left_thumb2", "left_thumb3", "right_index1", "right_index2", "right_index3", "right_middle1", "right_middle2", "right_middle3", "right_pinky1", "right_pinky2", "right_pinky3", "right_ring1", "right_ring2", "right_ring3", "right_thumb1", "right_thumb2", "right_thumb3", "jaw"};
-    private string[] ALL_JOINT_NAMES = { "pelvis", "left_hip", "right_hip", "spine1", "left_knee", "right_knee", "spine2", "left_ankle", "right_ankle", "spine3", "left_foot", "right_foot", "neck", "left_collar", "right_collar", "head", "left_shoulder", "right_shoulder", "left_elbow", "right_elbow", "left_wrist", "right_wrist", "left_index1", "left_index2", "left_index3", "left_middle1", "left_middle2", "left_middle3", "left_pinky1", "left_pinky2", "left_pinky3", "left_ring1", "left_ring2", "left_ring3", "left_thumb1", "left_thumb2", "left_thumb3", "right_index1", "right_index2", "right_index3", "right_middle1", "right_middle2", "right_middle3", "right_pinky1", "right_pinky2", "right_pinky3", "right_ring1", "right_ring2", "right_ring3", "right_thumb1", "right_thumb2", "right_thumb3", "jaw", "left_eye_smplhf", "right_eye_smplhf", "nose", "right_eye", "left_eye", "right_ear", "left_ear", "left_big_toe", "left_small_toe", "left_heel", "right_big_toe", "right_small_toe", "right_heel", "left_thumb", "left_index", "left_middle", "left_ring", "left_pinky", "right_thumb", "right_index", "right_middle", "right_ring", "right_pinky", "right_eye_brow1", "right_eye_brow2", "right_eye_brow3", "right_eye_brow4", "right_eye_brow5", "left_eye_brow5", "left_eye_brow4", "left_eye_brow3", "left_eye_brow2", "left_eye_brow1", "nose1", "nose2", "nose3", "nose4", "right_nose_2", "right_nose_1", "nose_middle", "left_nose_1", "left_nose_2", "right_eye1", "right_eye2", "right_eye3", "right_eye4", "right_eye5", "right_eye6", "left_eye4", "left_eye3", "left_eye2", "left_eye1", "left_eye6", "left_eye5", "right_mouth_1", "right_mouth_2", "right_mouth_3", "mouth_top", "left_mouth_3", "left_mouth_2", "left_mouth_1", "left_mouth_5", "left_mouth_4", "mouth_bottom", "right_mouth_4", "right_mouth_5", "right_lip_1", "right_lip_2", "lip_top", "left_lip_2", "left_lip_1", "left_lip_3", "lip_bottom", "right_lip_3", "right_contour_1", "right_contour_2", "right_contour_3", "right_contour_4", "right_contour_5", "right_contour_6", "right_contour_7", "right_contour_8", "contour_middle", "left_contour_8", "left_contour_7", "left_contour_6", "left_contour_5", "left_contour_4", "left_contour_3", "left_contour_2", "left_contour_1" };
+    private string[] SMPLX_POSE_JOINT_NAMES  = new string[] { "pelvis", "left_hip", "right_hip", "spine1", "left_knee", "right_knee", "spine2", "left_ankle", "right_ankle", "spine3", "left_foot", "right_foot", "neck", "left_collar", "right_collar", "head", "left_shoulder", "right_shoulder", "left_elbow", "right_elbow", "left_wrist", "right_wrist", "left_index1", "left_index2", "left_index3", "left_middle1", "left_middle2", "left_middle3", "left_pinky1", "left_pinky2", "left_pinky3", "left_ring1", "left_ring2", "left_ring3", "left_thumb1", "left_thumb2", "left_thumb3", "right_index1", "right_index2", "right_index3", "right_middle1", "right_middle2", "right_middle3", "right_pinky1", "right_pinky2", "right_pinky3", "right_ring1", "right_ring2", "right_ring3", "right_thumb1", "right_thumb2", "right_thumb3", "jaw"};
+    private string[] SMPLX_ALL_JOINT_NAMES    = new string[] { "pelvis", "left_hip", "right_hip", "spine1", "left_knee", "right_knee", "spine2", "left_ankle", "right_ankle", "spine3", "left_foot", "right_foot", "neck", "left_collar", "right_collar", "head", "left_shoulder", "right_shoulder", "left_elbow", "right_elbow", "left_wrist", "right_wrist", "left_index1", "left_index2", "left_index3", "left_middle1", "left_middle2", "left_middle3", "left_pinky1", "left_pinky2", "left_pinky3", "left_ring1", "left_ring2", "left_ring3", "left_thumb1", "left_thumb2", "left_thumb3", "right_index1", "right_index2", "right_index3", "right_middle1", "right_middle2", "right_middle3", "right_pinky1", "right_pinky2", "right_pinky3", "right_ring1", "right_ring2", "right_ring3", "right_thumb1", "right_thumb2", "right_thumb3", "jaw", "left_eye_smplhf", "right_eye_smplhf", "nose", "right_eye", "left_eye", "right_ear", "left_ear", "left_big_toe", "left_small_toe", "left_heel", "right_big_toe", "right_small_toe", "right_heel", "left_thumb", "left_index", "left_middle", "left_ring", "left_pinky", "right_thumb", "right_index", "right_middle", "right_ring", "right_pinky", "right_eye_brow1", "right_eye_brow2", "right_eye_brow3", "right_eye_brow4", "right_eye_brow5", "left_eye_brow5", "left_eye_brow4", "left_eye_brow3", "left_eye_brow2", "left_eye_brow1", "nose1", "nose2", "nose3", "nose4", "right_nose_2", "right_nose_1", "nose_middle", "left_nose_1", "left_nose_2", "right_eye1", "right_eye2", "right_eye3", "right_eye4", "right_eye5", "right_eye6", "left_eye4", "left_eye3", "left_eye2", "left_eye1", "left_eye6", "left_eye5", "right_mouth_1", "right_mouth_2", "right_mouth_3", "mouth_top", "left_mouth_3", "left_mouth_2", "left_mouth_1", "left_mouth_5", "left_mouth_4", "mouth_bottom", "right_mouth_4", "right_mouth_5", "right_lip_1", "right_lip_2", "lip_top", "left_lip_2", "left_lip_1", "left_lip_3", "lip_bottom", "right_lip_3", "right_contour_1", "right_contour_2", "right_contour_3", "right_contour_4", "right_contour_5", "right_contour_6", "right_contour_7", "right_contour_8", "contour_middle", "left_contour_8", "left_contour_7", "left_contour_6", "left_contour_5", "left_contour_4", "left_contour_3", "left_contour_2", "left_contour_1" };
     private Vector2[] joints2DScreenPositions; // Array para almacenar las posiciones de los joints en la pantalla
     private SMPLXParams parameters;
     private GameObject joint3dParentGO;
@@ -102,12 +102,14 @@ public class SMPLXAligner : MonoBehaviour
             // Rotar en 180° para que quede bien alineado
             smplxInstance.transform.rotation *= Quaternion.Euler(0, 0, 180);
             
-            // Posicionar smpl segun el primary keypoint (head)
+            // Alinear el smpl-x en base a dos joints 3D
             if ((human.location != null) && (human.translation != null) && (human.translation_pelvis != null) && (parameters.resized_width != 0) && (parameters.resized_height != 0) && (parameters.checkpoint_resolution != 0)) 
             {
-                AdjustScale(smplxInstance, human.translation, human.translation_pelvis);
-                AlignWithHead3D(smplxInstance, human.translation, parameters.resized_width, parameters.resized_height, parameters.checkpoint_resolution);
-                AdjustRotation(smplxInstance, human.translation, human.translation_pelvis);
+                // Joint Primario: Cabeza (15), Joint Secundario: Pelvis (0);
+                AlignMannequin(smplxInstance, 15, human.translation, 0, human.translation_pelvis[0], parameters.resized_width, parameters.resized_height, parameters.checkpoint_resolution);
+                
+                // Joint Primario: Pelvis (0), Joint Secundario: Cuello (12);
+                //AlignMannequin(smplxInstance, 0, human.joints_3d[0], 12, human.joints_3d[12], parameters.resized_width, parameters.resized_height, parameters.checkpoint_resolution);
             }
             
             // Dibujar los Joints2D
@@ -127,15 +129,15 @@ public class SMPLXAligner : MonoBehaviour
 
     private void ApplyPose(SMPLX smplxMannequin, float[][] newPose) 
     {
-        if (newPose.Length != SMPLX_JOINT_NAMES.Length)
+        if (newPose.Length != SMPLX_POSE_JOINT_NAMES.Length)
         {
-            Debug.LogError($"Incorrect number of pose values: {newPose.Length}, expected: {SMPLX_JOINT_NAMES.Length}");
+            Debug.LogError($"Incorrect number of pose values: {newPose.Length}, expected: {SMPLX_POSE_JOINT_NAMES.Length}");
             return;
         }
 
         for (int i = 0; i < newPose.Length; i++)
         {
-            string jointName = SMPLX_JOINT_NAMES[i];
+            string jointName = SMPLX_POSE_JOINT_NAMES[i];
             float rodX = newPose[i][0];
             float rodY = newPose[i][1];
             float rodZ = newPose[i][2];
@@ -180,69 +182,75 @@ public class SMPLXAligner : MonoBehaviour
         Debug.Log("Expression parameters applied successfully.");
     }
 
-    private void AdjustScale(GameObject smplxGO, float[] joint3DHead, float[][] joint3DPelvis)
+    private void AlignMannequin(GameObject smplxInstance, int primary3DJointIndex, float[] primary3DJoint, int secondary3DJointIndex, float[] secondary3DJoint, int resized_image_width, int resized_image_height, int checkpoint_resolution)
     {
-        Vector3 pelvis3D = new Vector3(joint3DPelvis[0][0], -joint3DPelvis[0][1], joint3DPelvis[0][2]);
-        Vector3 head3D = new Vector3(joint3DHead[0], -joint3DHead[1], joint3DHead[2]);
+        AdjustScale(smplxInstance, primary3DJointIndex, primary3DJoint, secondary3DJointIndex, secondary3DJoint);
+        AdjustPosition(smplxInstance, primary3DJointIndex, primary3DJoint, resized_image_width, resized_image_height, checkpoint_resolution);
+        AdjustRotation(smplxInstance, primary3DJointIndex, primary3DJoint, secondary3DJointIndex, secondary3DJoint);
+    }
+
+    private void AdjustScale(GameObject smplxGO, int primary3DJointIndex, float[] primary3DJoint, int secondary3DJointIndex, float[] secondary3DJoint)
+    {
+        Vector3 primary3DJointRef = new Vector3(primary3DJoint[0], -primary3DJoint[1], primary3DJoint[2]);
+        Vector3 secondary3DJointRef = new Vector3(secondary3DJoint[0], -secondary3DJoint[1], secondary3DJoint[2]);
 
         // Calcular factor de escala
-        float targetDistance = Vector3.Distance(head3D, pelvis3D);
-        Vector3 smplxHead = smplxGO.GetComponent<SMPLX>().JointTransforms[SMPLX_JOINT_NAMES[15]].position;
-        Vector3 smplxPelvis = smplxGO.GetComponent<SMPLX>().JointTransforms[SMPLX_JOINT_NAMES[0]].position;
-        float currentDistance = Vector3.Distance(smplxHead, smplxPelvis);
+        float targetDistance = Vector3.Distance(primary3DJointRef, secondary3DJointRef);
+        Vector3 primary3DJointSmplx = smplxGO.GetComponent<SMPLX>().JointTransforms[SMPLX_ALL_JOINT_NAMES[primary3DJointIndex]].position;
+        Vector3 secondary3DJointSmplx = smplxGO.GetComponent<SMPLX>().JointTransforms[SMPLX_ALL_JOINT_NAMES[secondary3DJointIndex]].position;
+        float currentDistance = Vector3.Distance(primary3DJointSmplx, secondary3DJointSmplx);
         float scaleFactor = targetDistance / currentDistance;
 
         // Aplicar escala al SMPL-X
         smplxGO.transform.localScale *= scaleFactor;
     }
 
-    private void AlignWithHead3D(GameObject smplxInstance, float[] joint3DHead, int image_width, int image_height, int model_img_size)
+    private void AdjustPosition(GameObject smplxInstance, int primary3DJointIndex, float[] primary3DJoint, int image_width, int image_height, int model_img_size)
     {
-        Transform headTransform = smplxInstance.GetComponent<SMPLX>().JointTransforms[SMPLX_JOINT_NAMES[15]];
-        Vector3 relativePositionHead = smplxInstance.transform.position - headTransform.position;
+        Transform primary3DJointSmplxTransform = smplxInstance.GetComponent<SMPLX>().JointTransforms[SMPLX_ALL_JOINT_NAMES[primary3DJointIndex]];
+        Vector3 relativePositionToPrimaryJoint = primary3DJointSmplxTransform.position - smplxInstance.transform.position;
         
-        Vector3 head3DWorld = new Vector3(joint3DHead[0], -joint3DHead[1], joint3DHead[2]);
+        Vector3 primary3DJointRef = new Vector3(primary3DJoint[0], -primary3DJoint[1], primary3DJoint[2]);
 
         // Ajustar la posición del modelo SMPLX
-        Vector3 offset = head3DWorld - smplxInstance.transform.position;
-        smplxInstance.transform.position += offset + relativePositionHead;
+        smplxInstance.transform.position = primary3DJointRef - relativePositionToPrimaryJoint;
 
-        Debug.Log($"offset: {offset}, relativePositionHead: {relativePositionHead}, smplxInstance.transform.position: {smplxInstance.transform.position + offset + relativePositionHead}, 3D World: {head3DWorld}, headTransform.position: {headTransform.position}");
+        //Debug.Log($"relativePositionToPrimaryJoint: {relativePositionToPrimaryJoint}, smplxInstance.transform.position: {primary3DJointRef - relativePositionToPrimaryJoint}, 3D World: {primary3DJointRef}, primary3DJointSmplxTransform.position: {primary3DJointSmplxTransform.position}");
     }
 
-    private void AdjustRotation(GameObject smplxGO, float[] joint3DHead, float[][] joint3DPelvis)
+    private void AdjustRotation(GameObject smplxGO, int primary3DJointIndex, float[] primary3DJoint, int secondary3DJointIndex, float[] secondary3DJoint)
     {
-        Vector3 smplxHead = smplxGO.GetComponent<SMPLX>().JointTransforms[SMPLX_JOINT_NAMES[15]].position;
-        Vector3 smplxPelvis = smplxGO.GetComponent<SMPLX>().JointTransforms[SMPLX_JOINT_NAMES[0]].position;
+        Vector3 primary3DJointSmplx = smplxGO.GetComponent<SMPLX>().JointTransforms[SMPLX_ALL_JOINT_NAMES[primary3DJointIndex]].position;
+        Vector3 secondary3DJointSmplx = smplxGO.GetComponent<SMPLX>().JointTransforms[SMPLX_ALL_JOINT_NAMES[secondary3DJointIndex]].position;
 
-        Vector3 pelvis3D = new Vector3(joint3DPelvis[0][0], -joint3DPelvis[0][1], joint3DPelvis[0][2]);
-        Vector3 head3D = new Vector3(joint3DHead[0], -joint3DHead[1], joint3DHead[2]);
+        Vector3 primary3DJointRef = new Vector3(primary3DJoint[0], -primary3DJoint[1], primary3DJoint[2]);
+        Vector3 secondary3DJointRef = new Vector3(secondary3DJoint[0], -secondary3DJoint[1], secondary3DJoint[2]);
         
-        // Dejar la cabeza como el pivote para rotar el SMPL-X
+        // Dejar el joint primario como el pivote para rotar el SMPL-X
         GameObject smplxPivotGO = new GameObject();
         Transform smplxPivot = smplxPivotGO.transform;
-        smplxPivot.position = new Vector3(smplxHead.x, smplxHead.y, smplxHead.z);
+        smplxPivot.position = new Vector3(primary3DJointSmplx.x, primary3DJointSmplx.y, primary3DJointSmplx.z);
         smplxGO.transform.parent = smplxPivot;
 
         // Calcular rotación
-        Vector3 currentPelvisDirection = (smplxPelvis - smplxHead).normalized;
-        Vector3 targetPelvisDirection = (pelvis3D - head3D).normalized;
+        Vector3 currentSecondaryJointDirection = (secondary3DJointSmplx - primary3DJointSmplx).normalized;
+        Vector3 targetSecondaryJointDirection = (secondary3DJointRef - primary3DJointRef).normalized;
 
-        Quaternion additionalRotation = Quaternion.FromToRotation(currentPelvisDirection, targetPelvisDirection);
-        Debug.Log($"currentPelvisDirection: {currentPelvisDirection}, targetPelvisDirection: {targetPelvisDirection}, additionalRotation: {additionalRotation}");
+        Quaternion additionalRotation = Quaternion.FromToRotation(currentSecondaryJointDirection, targetSecondaryJointDirection);
+        //Debug.Log($"currentSecondaryJointDirection: {currentSecondaryJointDirection}, targetSecondaryJointDirection: {targetSecondaryJointDirection}, additionalRotation: {additionalRotation}");
 
         // Aplicar rotación
         smplxPivot.rotation *= additionalRotation;
-        Debug.Log($"smplxPivot.rotation después: {smplxPivot.eulerAngles}");
+        //Debug.Log($"smplxPivot.rotation después: {smplxPivot.eulerAngles}");
 
         // Borrar el pivote
         smplxGO.transform.parent = null;
 
         // Verificar alineación
-        Vector3 finalHeadPosition = smplxGO.GetComponent<SMPLX>().JointTransforms[SMPLX_JOINT_NAMES[15]].position;
-        Vector3 finalPelvisPosition = smplxGO.GetComponent<SMPLX>().JointTransforms[SMPLX_JOINT_NAMES[0]].position;
-        Debug.Log($"Head Target: {head3D}, Actual: {finalHeadPosition}");
-        Debug.Log($"Pelvis Target: {pelvis3D}, Actual: {finalPelvisPosition}");
+        Vector3 finalPrimaryJointPosition = smplxGO.GetComponent<SMPLX>().JointTransforms[SMPLX_ALL_JOINT_NAMES[primary3DJointIndex]].position;
+        Vector3 finalSecondaryJointPosition = smplxGO.GetComponent<SMPLX>().JointTransforms[SMPLX_ALL_JOINT_NAMES[secondary3DJointIndex]].position;
+        //Debug.Log($"Primary Joint Id: {primary3DJointIndex}, Primary Joint Target: {primary3DJointRef}, Actual: {finalPrimaryJointPosition}");
+        //Debug.Log($"Secondary Joint Id: {secondary3DJointIndex}, Secondary Joint Target: {secondary3DJointRef}, Actual: {finalSecondaryJointPosition}");
         
         // Destruir los GameObjects creados
         Destroy(smplxPivotGO);
@@ -312,7 +320,7 @@ public class SMPLXAligner : MonoBehaviour
             jointObject.transform.localScale = Vector3.one * joint3DScale;
             jointObjects.Add(jointObject);
 
-            jointObject.name = i + "_" + ALL_JOINT_NAMES[i];
+            jointObject.name = i + "_" + SMPLX_ALL_JOINT_NAMES[i];
             // Eliminar el collider
             Destroy(jointObject.GetComponent<SphereCollider>());
 
